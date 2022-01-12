@@ -32,12 +32,12 @@ public class CommandRepo : ICommandRepo
             .OrderBy(c => c.Platform!.Name);
     }
 
-    public Command GetCommand(int platformId, int commandId)
+    public Command? GetCommand(int platformId, int commandId)
     {
-        return _context.Commands.Where(c => c.PlatformId == platformId &&  c.Id == commandId).FirstOrDefault() ?? throw new InvalidOperationException();
+        return _context.Commands?.FirstOrDefault(c => c!.PlatformId == platformId && c.Id == commandId);
     }
 
-    public void CreateCommand(int platformId, Command command)
+    public void CreateCommand(int platformId, Command? command)
     {
         if (command == null) throw new ArgumentNullException(nameof(command));
         command.PlatformId = platformId;

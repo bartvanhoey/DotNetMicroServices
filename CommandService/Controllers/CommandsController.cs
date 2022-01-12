@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CommandService.Data;
 using CommandService.Dtos;
+using CommandService.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommandService.Controllers;
@@ -16,16 +17,48 @@ public class CommandsController : ControllerBase
     {
         _repo = repo;
         _mapper = mapper;
-    }   
-    
+    }
+
     [HttpGet]
     public ActionResult<IEnumerable<CommandReadDto>> GetCommandsForPlatform(int platformId)
     {
         Console.WriteLine("--> Getting Command for platformId from CommandService");
         if (!_repo.PlatformExists(platformId)) return NotFound();
-        
+
         var commands = _repo.GetCommandsForPlatform(platformId);
         return Ok(_mapper.Map<IEnumerable<CommandReadDto>>(commands));
     }
-    
+
+    [HttpGet("{commandId:int}", Name = "GetCommandForPlatform")]
+    public ActionResult<CommandReadDto> GetCommandForPlatform(int platformId, int commandId)
+    {
+        Console.WriteLine(
+            $"--> Getting Command for platformId {platformId} and commandId {commandId} from CommandService");
+        if (!_repo.PlatformExists(platformId)) return NotFound();
+
+        var command = _repo.GetCommand(platformId, commandId);
+
+        if (command is null) return NotFound();
+
+        return Ok(_mapper.Map<CommandReadDto>(command));
+    }
+
+
+    [HttpPost]
+    public ActionResult<CommandReadDto> CreateCommandForPlatform(int platformId, CommandCreateDto commandCreateDto)
+    {
+        Console.WriteLine($"--> Creating Command for platformId {platformId} from CommandService");
+
+        if (!_repo.PlatformExists(platformId)) return NotFound();
+
+        var command = _mapper.Map<Command>(commandCreateDto);
+
+        _repo.CreateCommand(platformId, command);
+        _repo.SaveChanges();
+
+        var commandReadDto = _mapper.Map<CommandReadDto>(command);
+
+        return CreatedAtRoute(nameof(GetCommandForPlatform),
+            new { platformId = platformId, commandId = commandReadDto.Id }, commandReadDto);
+    }
 }

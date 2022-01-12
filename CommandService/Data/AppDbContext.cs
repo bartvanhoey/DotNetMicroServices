@@ -11,7 +11,7 @@ public class AppDbContext: DbContext
     }
 
     public DbSet<Platform>? Platforms { get; set; }
-    public DbSet<Command>? Commands { get; set; }
+    public DbSet<Command?>? Commands { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
